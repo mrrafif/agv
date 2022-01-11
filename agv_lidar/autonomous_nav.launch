@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="map_file" default="$(find robot_setup_tf)/maps/my_maps.yaml"/>
+  <arg name="model" default="$(find robot_setup_tf)/urdf/mobile_robot.urdf.xacro"/>
+  
+  <rosparam file="$(find robot_setup_tf)/agv_lidar/controllers.yaml" command="load"/>
+  <rosparam file="$(find robot_setup_tf)/agv_lidar/joint_limits.yaml" command="load"/>
+ 
+  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  
+  <!--node name="robot_hardware_interface" pkg="mobile" type="mobile_robot_hardware_interface" output="screen">
+    <remap from="/robot_setup_tf/mobile_base_controller/cmd_vel" to="/cmd_vel"/>
+   </node-->
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+  </node>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robot_setup_tf)/agv_lidar/nav_config.rviz"/>
+  
+  <!--node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+        args="
+            /robot_setup_tf/joints_update
+            /robot_setup_tf/mobile_base_controller" >
+  </node-->
+
+
+
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" >
+  </node>
+  
+  <include file="$(find rplidar_ros)/launch/rplidar.launch" />
+  <include file="$(find robot_setup_tf)/agv_lidar/move_base.launch" /> 
+  <include file="$(find robot_setup_tf)/agv_lidar/amcl.launch" />
+
+    <!--node name="obstacle_avoidance_node" pkg="robot_setup_tf" type="naive_obs_avoid_tb3.py" /-->
+</launch>
